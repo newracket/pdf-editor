@@ -1,0 +1,100 @@
+body {
+  margin: 0px;
+}
+
+.pdfEmbed {
+  width: 70vw;
+  height: 90vh;
+}
+
+.pdfPreview {
+  width: 50px;
+  height: 300px;
+}
+
+.navbar {
+  width: 100%;
+  background-color: red;
+  color: white;
+  padding: 5px;
+  display: flex;
+  flex-direction: row;
+  font-size: 4vh;
+}
+
+.nav-item {
+  margin: 10px;
+}
+
+.react-pdf__Document, .react-pdf__Page {
+  display: inline-block !important;
+  margin: 10px 0px 0px 10px;
+}
+
+.react-pdf__Page__canvas {
+  width: 200px !important;
+  height: 250px !important;
+  border: 1px solid black;
+  border-radius: 5%;
+  display: inline-block !important;
+}
+
+.react-pdf__Page__textContent, .react-pdf__Page__annotations {
+  display: none !important;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.buttons {
+  border-bottom: 1px solid #868686;
+  padding-bottom: 10px;
+  position: relative;
+}
+
+.upload {
+  background-color: #4bffff;
+  padding: 5px;
+  border-radius: 0.5rem;
+  display: inline-block;
+  font-size: 24px;
+  cursor: pointer;
+  border: 1px solid #868686;
+}
+
+#mergeButton {
+  position: absolute;
+  right: 0px;
+}
+
+.pdfViewer {
+  border: 1px solid black;
+  border-radius: 2rem;
+  width: 80vw;
+  height: 70vh;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdfPreview {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  width: 100% !important;
+  height: 100% !important;
+  overflow-y: auto;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pdfMerged {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
