@@ -1,7 +1,10 @@
 import React from "react";
 import "./Homepage.css";
 import { Document, Page, pdfjs } from 'react-pdf';
+import { mergeWebsite } from "./config.json";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+
+console.log(mergeWebsite);
 
 class Homepage extends React.Component {
   constructor(props) {
@@ -26,7 +29,7 @@ class Homepage extends React.Component {
   }
 
   async mergePDFs() {
-    const res = await fetch("http://localhost:9000/pdf-merger", {
+    const res = await fetch(mergeWebsite, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
