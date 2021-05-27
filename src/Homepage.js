@@ -2,10 +2,7 @@ import React from "react";
 import "./Homepage.css";
 import { Document, Page, pdfjs } from 'react-pdf';
 import { PDFDocument } from 'pdf-lib';
-import { mergeWebsite } from "./config.json";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
-
-console.log(mergeWebsite);
 
 class Homepage extends React.Component {
   constructor(props) {
@@ -50,6 +47,88 @@ class Homepage extends React.Component {
     });
   }
 
+  onDragOver(event) {
+    event.preventDefault();
+  }
+
+  onDragStart(event, id) {
+    event.dataTransfer.setData("id", id);
+  }
+
+  onDrop(event) {
+    new Promise((resolve, reject) => {
+      const id = event.dataTransfer.getData("id");
+      const cards = Array.from(document.querySelectorAll("[id^='draggable']"));
+      const firstCards = cards.filter((card, i) => card.getBoundingClientRect().top !== cards[i - 1]?.getBoundingClientRect().top);
+      const lastCards = cards.filter((card, i) => card.getBoundingClientRect().top !== cards[i + 1]?.getBoundingClientRect().top);
+
+      firstCards.forEach(firstCard => {
+        const bounds = firstCard.getBoundingClientRect();
+        if (event.pageX < (bounds.left + 20) && event.pageY < bounds.bottom && event.pageY > bounds.top) {
+          const fileUrls = this.state.fileUrls.slice(0);
+          fileUrls.splice(0, 0, fileUrls[id]);
+          fileUrls.splice(parseInt(id) + 1, 1);
+
+          const fileBuffers = this.state.fileBuffers.slice(0);
+          fileBuffers.splice(0, 0, fileBuffers[id]);
+          fileBuffers.splice(parseInt(id) + 1, 1);
+
+          this.setState({
+            fileUrls,
+            fileBuffers
+          });
+          resolve();
+        }
+      });
+
+      lastCards.forEach(lastCard => {
+        const bounds = lastCard.getBoundingClientRect();
+        if (event.pageX > (bounds.right) && event.pageY < bounds.bottom && event.pageY > bounds.top) {
+          const fileUrls = this.state.fileUrls.slice(0);
+          fileUrls.splice(cards.indexOf(lastCard) + 1, 0, fileUrls[id]);
+          fileUrls.splice(parseInt(id), 1);
+
+          const fileBuffers = this.state.fileBuffers.slice(0);
+          fileBuffers.splice(cards.indexOf(lastCard) + 1, 0, fileBuffers[id]);
+          fileBuffers.splice(parseInt(id), 1);
+
+          this.setState({
+            fileUrls,
+            fileBuffers
+          });
+
+          resolve();
+        }
+      });
+
+      cards.forEach((card, i) => {
+        const bounds = card.getBoundingClientRect();
+        if (event.pageX > bounds.right && (cards[i + 1] && event.pageX < cards[i + 1].getBoundingClientRect().right) &&
+          event.pageY < bounds.bottom && event.pageY > bounds.top) {
+          const fileUrls = this.state.fileUrls.slice(0);
+          fileUrls.splice(i + 1, 0, fileUrls[id]);
+
+          const fileBuffers = this.state.fileBuffers.slice(0);
+          fileBuffers.splice(i + 1, 0, fileBuffers[id]);
+
+          if (id > i) {
+            fileUrls.splice(parseInt(id) + 1, 1);
+            fileBuffers.splice(parseInt(id) + 1, 1);
+          }
+          else {
+            fileUrls.splice(id, 1);
+            fileBuffers.splice(id, 1);
+          }
+
+          this.setState({
+            fileUrls,
+            fileBuffers
+          });
+        }
+      });
+    });
+  }
+
   render() {
     return (
       <div className="container">
@@ -62,12 +141,14 @@ class Homepage extends React.Component {
             <input type="file" name="pdf1" id="pdf1" accept="application/pdf" onChange={this.handleUpload} multiple />
             <button className="upload" id="mergeButton" onClick={this.mergePDFs}>Merge</button>
           </div>
-          <div className="pdfPreview">
+          <div className="pdfPreview" onDragOver={e => this.onDragOver(e)} onDrop={e => this.onDrop(e)}>
             {this.state.fileUrls && this.state.fileUrls.map((url, i) => {
               return (
-                <Document file={url} key={i}>
-                  <Page pageNumber={1} />
-                </Document>
+                <div key={i} id={`draggable${i}`} draggable onDragStart={e => this.onDragStart(e, i)}>
+                  <Document file={url}>
+                    <Page pageNumber={1} />
+                  </Document>
+                </div>
               );
             })}
           </div>
