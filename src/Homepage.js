@@ -1,6 +1,7 @@
 import React from "react";
 import "./Homepage.css";
 import { Document, Page, pdfjs } from 'react-pdf';
+import { PDFDocument } from 'pdf-lib';
 import { mergeWebsite } from "./config.json";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
@@ -23,22 +24,24 @@ class Homepage extends React.Component {
     }
 
     this.setState({
+      files: event.target.files,
       fileBuffers: fileBuffers.map(uintarray => Array.from(uintarray)),
       fileUrls: Array.from(event.target.files).map(file => URL.createObjectURL(file))
     });
   }
 
   async mergePDFs() {
-    const res = await fetch(mergeWebsite, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ urls: this.state.fileBuffers })
-    });
+    const mergedDoc = await PDFDocument.create();
 
-    const mergedPdf = await res.json();
-    const mergedPdfBuffer = new Uint8Array(mergedPdf.data.split(",")).buffer;
+    for (const buffer of this.state.fileBuffers) {
+      const pdfDoc = await PDFDocument.load(new Uint8Array(buffer));
+      const pdfPages = await mergedDoc.copyPages(pdfDoc, [...Array(pdfDoc.getPageCount()).keys()]);
+
+      pdfPages.forEach(pdfPage => mergedDoc.addPage(pdfPage));
+    };
+
+    const pdfBytes = await mergedDoc.save();
+    const mergedPdfBuffer = new Uint8Array(pdfBytes).buffer;
     const mergedPdfFile = new File([mergedPdfBuffer], "merged.pdf", { type: "application/pdf" })
     const mergedPdfUrl = URL.createObjectURL(mergedPdfFile);
 
